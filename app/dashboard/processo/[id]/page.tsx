@@ -254,7 +254,7 @@ export default function ProcessoDetalhe() {
             <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-0.5 flex items-center">
               Processo <span className="mx-1.5 text-gray-300">|</span> Ano Operacional: <span className="text-orange-600 ml-1">{anoOperacional}</span>
             </span>
-            <h1 className="text-base sm:text-lg font-extrabold text-gray-900 leading-tight tracking-tight truncate">
+            <h1 className="text-xs sm:text-sm font-extrabold text-gray-900 leading-tight tracking-tight truncate">
               <span className="text-orange-600">{processo.codigo}</span> <span className="text-gray-300 font-light mx-1">|</span> {processo.cliente} <span className="text-gray-300 font-light mx-1">|</span> {processo.descricao}
             </h1>
           </div>
@@ -303,18 +303,18 @@ export default function ProcessoDetalhe() {
             onClick={() => setModalTarefaAberto(true)}
             className="w-full bg-gray-900 hover:bg-gray-800 text-white font-bold py-3.5 px-4 rounded-xl shadow-sm transition-colors text-xs uppercase tracking-wider flex items-center justify-center"
           >
-            Registar Item em {setorAtivoAbas}
+            Registar
           </button>
         )}
 
         <section className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
           <div className="px-5 py-4 border-b border-gray-100 bg-gray-50 flex justify-between items-center">
-            <h3 className="font-bold text-gray-800 text-sm uppercase tracking-wide">Registos Operacionais</h3>
+            <h3 className="font-bold text-gray-800 text-sm uppercase tracking-wide">Registos</h3>
             <span className="text-xs font-bold text-gray-500 bg-gray-200 px-2.5 py-1 rounded-lg uppercase border border-gray-300">{setorAtivoAbas}</span>
           </div>
 
           <div className="hidden sm:grid grid-cols-5 gap-4 px-4 py-2.5 text-xs font-bold text-gray-400 uppercase tracking-wider border-b border-gray-100 bg-gray-50/50">
-            <div>Tipo</div>
+            <div>Tipo de Registo</div>
             <div className="col-span-2">Assunto / Indicações</div>
             <div>Equipa Associada</div>
             <div className="text-right">Ação</div>
