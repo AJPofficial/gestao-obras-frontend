@@ -244,7 +244,7 @@ export default function Dashboard() {
               </button>
             </div>
             
-<form onSubmit={criarProcesso} className="p-6 space-y-4 bg-white">
+            <form onSubmit={criarProcesso} className="p-6 space-y-4 bg-white">
               {erroModal && <div className="p-3 bg-red-50 text-red-600 text-sm rounded-xl border border-red-100 text-center font-medium">{erroModal}</div>}
               
               <div className="grid grid-cols-3 gap-4">
