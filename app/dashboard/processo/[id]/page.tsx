@@ -172,6 +172,7 @@ export default function ProcessoDetalhe() {
   }
 
   const tarefasFiltradas = tarefas.filter(t => t.setor_alvo === setorAtivoAbas);
+  const gruposSetores = ["Orçamentação", "Preparação", "Produção", "Montagem", "Gestão"];
 
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col font-sans">
@@ -192,15 +193,16 @@ export default function ProcessoDetalhe() {
       <main className="flex-1 p-4 w-full max-w-5xl mx-auto space-y-6 mt-2">
         
         <section className="bg-white p-5 rounded-xl shadow-sm border border-gray-200">
-          <h2 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">Especificação Geral / Cliente</h2>
-          <p className="text-sm text-gray-800 font-medium">{processo.descricao || <span className="text-gray-300 italic">Sem comentários iniciais</span>}</p>
+          <h2 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">Comentários Iniciais / Indicações</h2>
+          <p className="text-sm text-gray-800 font-medium">{processo.descritivo || <span className="text-gray-300 italic">Nenhuma indicação registada.</span>}</p>
           <div className="mt-3 pt-3 border-t border-gray-100 flex justify-between text-xs text-gray-400 font-bold">
-            <span>Estado da Obra: <span className="text-blue-600 uppercase">{processo.estado}</span></span>
-            <span>Identificador: ID {processo.id}</span>
+            <span>Estado da Obra: <span className="text-blue-600 uppercase bg-blue-50 px-2 py-0.5 rounded ml-1 border border-blue-100">{processo.estado}</span></span>
+            <span>ID: {processo.id}</span>
           </div>
         </section>
 
-        <nav className="grid grid-cols-4 gap-1 bg-gray-200 p-1 rounded-xl shadow-inner">
+        {/* Grelha de Navegação Reparada - 2 Colunas no Telemóvel, 4 no PC */}
+        <nav className="grid grid-cols-2 sm:grid-cols-4 gap-2 bg-gray-200 p-1.5 rounded-xl shadow-inner">
           {["Orçamentação", "Preparação", "Produção", "Montagem"].map((s) => (
             <button
               key={s}
@@ -208,7 +210,7 @@ export default function ProcessoDetalhe() {
               className={`py-3 text-center text-xs font-bold uppercase tracking-wider rounded-lg transition-all ${
                 setorAtivoAbas === s 
                   ? "bg-white text-orange-600 shadow-sm" 
-                  : "text-gray-600 hover:text-gray-900"
+                  : "text-gray-600 hover:text-gray-900 hover:bg-gray-300/50"
               }`}
             >
               {s}
@@ -223,19 +225,19 @@ export default function ProcessoDetalhe() {
             onClick={() => setModalTarefaAberto(true)}
             className="w-full bg-gray-900 hover:bg-gray-800 text-white font-bold py-3.5 px-4 rounded-xl shadow-sm transition-colors text-xs uppercase tracking-wider flex items-center justify-center"
           >
-            Registar Item em {setorAtivoAbas}
+            Registar
           </button>
         )}
 
         <section className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
           <div className="px-5 py-4 border-b border-gray-100 bg-gray-50 flex justify-between items-center">
-            <h3 className="font-bold text-gray-800 text-sm uppercase tracking-wide">Fluxo de Registos do Setor</h3>
-            <span className="text-xs font-bold text-gray-500 bg-gray-200 px-2.5 py-1 rounded-lg uppercase">{setorAtivoAbas}</span>
+            <h3 className="font-bold text-gray-800 text-sm uppercase tracking-wide">Registos</h3>
+            <span className="text-xs font-bold text-gray-500 bg-gray-200 px-2.5 py-1 rounded-lg uppercase border border-gray-300">{setorAtivoAbas}</span>
           </div>
 
           <div className="hidden sm:grid grid-cols-5 gap-4 px-4 py-2.5 text-xs font-bold text-gray-400 uppercase tracking-wider border-b border-gray-100 bg-gray-50/50">
             <div>Tipo</div>
-            <div className="col-span-2">Título / Descrição</div>
+            <div className="col-span-2">Assunto / Indicações</div>
             <div>Equipa Associada</div>
             <div className="text-right">Ação</div>
           </div>
@@ -243,7 +245,7 @@ export default function ProcessoDetalhe() {
           <div className="divide-y divide-gray-100">
             {tarefasFiltradas.length === 0 ? (
               <div className="p-8 text-center text-gray-400 font-medium text-sm">
-                Nenhum registo operacional associado a este setor até ao momento.
+                Nenhum registo operacional efetuado.
               </div>
             ) : (
               tarefasFiltradas.map((t) => (
@@ -261,7 +263,7 @@ export default function ProcessoDetalhe() {
                     <p className={`text-sm font-bold text-gray-900 ${t.estado === "Resolvido" ? "line-through text-gray-400" : ""}`}>{t.titulo}</p>
                     {t.descricao && <p className="text-xs text-gray-500">{t.descricao}</p>}
                   </div>
-                  <div className="text-xs text-gray-600 font-medium">
+                  <div className="text-xs text-gray-600 font-medium bg-gray-50 p-2 rounded-lg border border-gray-100">
                     {utilizadores
                       .filter(u => t.utilizadores_associados?.includes(u.id))
                       .map(u => u.nome)
@@ -270,7 +272,7 @@ export default function ProcessoDetalhe() {
                   <div className="sm:text-right">
                     <button
                       onClick={() => alternarEstadoTarefa(t.id, t.estado)}
-                      className={`text-xs font-bold px-3 py-1.5 rounded-lg border transition-all ${
+                      className={`w-full sm:w-auto text-xs font-bold px-3 py-2 sm:py-1.5 rounded-lg border transition-all ${
                         t.estado === "Resolvido"
                           ? "bg-green-50 text-green-700 border-green-100 hover:bg-green-100"
                           : "bg-white text-gray-700 border-gray-300 hover:bg-gray-50 shadow-sm"
@@ -287,55 +289,69 @@ export default function ProcessoDetalhe() {
 
       </main>
 
+      {/* MODAL COM FUNDO BLINDADO PARA DARK MODE E CHECKBOXES POR GRUPO */}
       {modalTarefaAberto && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
-          <div className="bg-white rounded-2xl w-full max-w-md overflow-hidden shadow-xl border border-gray-100">
-            <div className="px-6 py-4 border-b border-gray-200 bg-gray-50 flex justify-between items-center">
+        <div className="fixed inset-0 bg-gray-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-2xl w-full max-w-md overflow-hidden shadow-xl border border-gray-100 flex flex-col max-h-[90vh]">
+            <div className="px-6 py-4 border-b border-gray-200 bg-gray-50 flex justify-between items-center shrink-0">
               <h3 className="font-bold text-gray-900 w-full text-center pl-6">Novo Registo</h3>
               <button onClick={() => setModalTarefaAberto(false)} className="text-gray-400 hover:text-gray-600 focus:outline-none">
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
               </button>
             </div>
             
-            <form onSubmit={submeterTarefa} className="p-6 space-y-4 bg-white">
+            <form onSubmit={submeterTarefa} className="p-6 space-y-4 bg-white overflow-y-auto grow">
               {erroModal && <div className="p-3 bg-red-50 text-red-600 text-sm rounded-xl border border-red-100 text-center font-medium">{erroModal}</div>}
               
               <div>
                 <label className="block text-center w-full text-xs font-bold text-gray-600 mb-1 uppercase tracking-wider">Tipo</label>
                 <select value={tipoTarefa} onChange={(e) => setTipoTarefa(e.target.value)} className="w-full px-3 py-3 border border-gray-300 rounded-xl bg-white text-gray-900 font-semibold cursor-pointer text-center text-sm">
-                  <option value="Tarefa">Tarefa Padrão</option>
-                  <option value="Alerta">Alerta Crítico</option>
+                  <option value="Tarefa">Tarefa</option>
+                  <option value="Alerta">Alerta</option>
                 </select>
               </div>
 
               <div>
-                <label className="block text-center w-full text-xs font-bold text-gray-600 mb-1 uppercase tracking-wider">Título</label>
+                <label className="block text-center w-full text-xs font-bold text-gray-600 mb-1 uppercase tracking-wider">Assunto</label>
                 <input required type="text" value={tituloTarefa} onChange={(e) => setTituloTarefa(e.target.value)} className="w-full px-4 py-3 border border-gray-300 rounded-xl bg-white text-gray-900 text-center text-sm" />
               </div>
               
               <div>
-                <label className="block text-center w-full text-xs font-bold text-gray-600 mb-1 uppercase tracking-wider">Especificações Detalheadas</label>
+                <label className="block text-center w-full text-xs font-bold text-gray-600 mb-1 uppercase tracking-wider">Indicações</label>
                 <textarea value={descricaoTarefa} onChange={(e) => setDescricaoTarefa(e.target.value)} rows={2} className="w-full px-4 py-3 border border-gray-300 rounded-xl bg-white text-gray-900 text-center text-sm"></textarea>
               </div>
 
+              {/* LISTA DE COLABORADORES AGRUPADA POR SETOR */}
               <div>
                 <label className="block text-center w-full text-xs font-bold text-gray-600 mb-2 uppercase tracking-wider">Associar Colaboradores</label>
-                <div className="max-h-32 overflow-y-auto border border-gray-200 rounded-xl p-2 space-y-1.5 bg-gray-50/50">
-                  {utilizadores.map((u) => (
-                    <label key={u.id} className="flex items-center space-x-3 px-2 py-1 hover:bg-white rounded-lg cursor-pointer transition-colors text-sm text-gray-800">
-                      <input 
-                        type="checkbox" 
-                        checked={utilizadoresSelecionados.includes(u.id)}
-                        onChange={() => handleSelecaoUtilizador(u.id)}
-                        className="rounded border-gray-300 text-orange-600 focus:ring-orange-500 w-4 h-4"
-                      />
-                      <span className="font-medium">{u.nome} <span className="text-xs text-gray-400">({u.setor})</span></span>
-                    </label>
-                  ))}
+                <div className="max-h-48 overflow-y-auto border border-gray-200 rounded-xl p-3 space-y-4 bg-gray-50 text-left">
+                  {gruposSetores.map((setorGroup) => {
+                    const usersInSetor = utilizadores.filter(u => u.setor === setorGroup);
+                    if (usersInSetor.length === 0) return null;
+                    return (
+                      <div key={setorGroup} className="space-y-1.5">
+                        <h4 className="text-xs font-extrabold text-orange-600 uppercase tracking-wider border-b border-gray-200 pb-1">{setorGroup}</h4>
+                        {usersInSetor.map((u) => (
+                          <label key={u.id} className="flex items-center space-x-3 px-2 py-1.5 hover:bg-white rounded-lg cursor-pointer transition-colors text-sm text-gray-800 border border-transparent hover:border-gray-100 shadow-sm">
+                            <input 
+                              type="checkbox" 
+                              checked={utilizadoresSelecionados.includes(u.id)}
+                              onChange={() => handleSelecaoUtilizador(u.id)}
+                              className="rounded border-gray-300 text-orange-600 focus:ring-orange-500 w-4 h-4 bg-white"
+                            />
+                            <span className="font-medium">{u.nome}</span>
+                          </label>
+                        ))}
+                      </div>
+                    );
+                  })}
+                  {utilizadores.length === 0 && (
+                    <p className="text-xs text-center text-gray-400 py-2">Sem colaboradores disponíveis.</p>
+                  )}
                 </div>
               </div>
               
-              <button type="submit" className="w-full bg-orange-600 hover:bg-orange-700 text-white font-bold py-3.5 px-4 rounded-xl transition-colors uppercase tracking-wider text-xs mt-4 shadow-sm">
+              <button type="submit" className="w-full bg-orange-600 hover:bg-orange-700 text-white font-bold py-3.5 px-4 rounded-xl transition-colors uppercase tracking-wider text-xs mt-4 shadow-sm shrink-0">
                 Confirmar Registo
               </button>
             </form>
