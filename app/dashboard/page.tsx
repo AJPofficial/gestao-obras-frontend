@@ -173,9 +173,9 @@ export default function Dashboard() {
               <option value="2025">Ano: 2025</option>
               <option value="2026">Ano: 2026</option>
               <option value="2027">Ano: 2027</option>
-              <option value="2027">Ano: 2028</option>
-              <option value="2027">Ano: 2029</option>
-              <option value="2027">Ano: 2030</option>
+              <option value="2028">Ano: 2028</option>
+              <option value="2029">Ano: 2029</option>
+              <option value="2030">Ano: 2030</option>
             </select>
           </div>
           
@@ -193,7 +193,11 @@ export default function Dashboard() {
               </div>
             ) : (
               processos.map((proc) => (
-                <div key={proc.id} className="p-4 grid grid-cols-1 sm:grid-cols-4 gap-2 sm:gap-4 items-start sm:items-center hover:bg-gray-50 transition-colors">
+                <div 
+                  key={proc.id} 
+                  onClick={() => router.push(`/dashboard/processo/${proc.id}`)}
+                  className="p-4 grid grid-cols-1 sm:grid-cols-4 gap-2 sm:gap-4 items-start sm:items-center hover:bg-gray-50 transition-colors cursor-pointer"
+                >
                   <div className="font-bold text-orange-600 text-base sm:text-sm">{proc.codigo}</div>
                   <div className="text-sm text-gray-700 col-span-2 font-medium">{proc.descritivo || <span className="text-gray-300 italic">Sem descrição</span>}</div>
                   <div className="sm:text-right">
@@ -255,6 +259,9 @@ export default function Dashboard() {
                     <option value="2025">2025</option>
                     <option value="2026">2026</option>
                     <option value="2027">2027</option>
+                    <option value="2028">2028</option>
+                    <option value="2029">2029</option>
+                    <option value="2030">2030</option>
                   </select>
                 </div>
 
