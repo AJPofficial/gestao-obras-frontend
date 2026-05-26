@@ -235,7 +235,7 @@ export default function Dashboard() {
 
       {/* MODAL: Adicionar Processo - Blindado contra Dark Mode Forçado */}
       {modalAberto && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
+        <div className="fixed inset-0 bg-gray-400 bg-opacity-30 backdrop-blur-sm z-50 flex items-center justify-center p-4">
           <div className="bg-white rounded-2xl w-full max-w-md overflow-hidden shadow-xl border border-gray-100">
             <div className="px-6 py-4 border-b border-gray-200 bg-gray-50 flex justify-between items-center">
               <h3 className="font-bold text-gray-900 w-full text-center pl-6">Adicionar Processo</h3>
