@@ -9,7 +9,6 @@ export default function ProcessoDetalhe() {
   const searchParams = useSearchParams();
   
   const processoId = params?.id;
-  // Extrai o ano do link. Se falhar, usa o ano atual por segurança.
   const anoOperacional = searchParams?.get("ano") || new Date().getFullYear().toString();
 
   const [setorUtilizador, setSetorUtilizador] = useState("");
@@ -18,12 +17,18 @@ export default function ProcessoDetalhe() {
   const [utilizadores, setUtilizadores] = useState<any[]>([]);
   const [setorAtivoAbas, setSetorAtivoAbas] = useState("Orçamentação");
 
+  // Estados Modal Registos
   const [modalTarefaAberto, setModalTarefaAberto] = useState(false);
   const [tituloTarefa, setTituloTarefa] = useState("");
   const [descricaoTarefa, setDescricaoTarefa] = useState("");
   const [tipoTarefa, setTipoTarefa] = useState("Tarefa");
   const [utilizadoresSelecionados, setUtilizadoresSelecionados] = useState<number[]>([]);
-  const [erroModal, setErroModal] = useState("");
+  const [erroModalTarefa, setErroModalTarefa] = useState("");
+
+  // Estados Modal Transição
+  const [modalTransitarAberto, setModalTransitarAberto] = useState(false);
+  const [anoDestino, setAnoDestino] = useState((parseInt(anoOperacional) + 1).toString());
+  const [erroModalTransitar, setErroModalTransitar] = useState("");
 
   useEffect(() => {
     const token = localStorage.getItem("token");
@@ -63,7 +68,6 @@ export default function ProcessoDetalhe() {
     try {
       const baseUrl = process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:8000";
       const token = localStorage.getItem("token");
-      // Envia o ano para a API filtrar
       const resposta = await fetch(`${baseUrl}/tarefas/processo/${processoId}?ano=${anoOperacional}`, {
         headers: { "Authorization": `Bearer ${token}` }
       });
@@ -133,16 +137,46 @@ export default function ProcessoDetalhe() {
     }
   };
 
+  const confirmarTransicao = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setErroModalTransitar("");
+
+    try {
+      const baseUrl = process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:8000";
+      const token = localStorage.getItem("token");
+      const resposta = await fetch(`${baseUrl}/processos/${processoId}/transitar`, {
+        method: "POST",
+        headers: {
+          "Authorization": `Bearer ${token}`,
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({ ano_destino: parseInt(anoDestino) })
+      });
+
+      if (resposta.ok) {
+        setModalTransitarAberto(false);
+        alert(`Processo transitado para o ano ${anoDestino} com sucesso.`);
+        // Redireciona o utilizador diretamente para a secção do novo ano
+        router.push(`/dashboard/processo/${processoId}?ano=${anoDestino}`);
+      } else {
+        const erro = await resposta.json();
+        setErroModalTransitar(erro.detail || "Falha ao transitar o processo.");
+      }
+    } catch (error) {
+      setErroModalTransitar("Falha de comunicação externa.");
+    }
+  };
+
   const submeterTarefa = async (e: React.FormEvent) => {
     e.preventDefault();
-    setErroModal("");
+    setErroModalTarefa("");
 
     if (setorUtilizador === "Montagem" && setorAtivoAbas !== "Montagem") {
-      setErroModal("Permissão restrita. Apenas pode registar itens no setor de Montagem.");
+      setErroModalTarefa("Permissão restrita. Apenas pode registar itens no setor de Montagem.");
       return;
     }
     if (setorUtilizador === "Produção" && setorAtivoAbas !== "Produção") {
-      setErroModal("Permissão restrita. Apenas pode registar itens no setor de Produção.");
+      setErroModalTarefa("Permissão restrita. Apenas pode registar itens no setor de Produção.");
       return;
     }
 
@@ -162,7 +196,7 @@ export default function ProcessoDetalhe() {
           descricao: descricaoTarefa,
           tipo: tipoTarefa,
           utilizadores_associados: utilizadoresSelecionados,
-          ano: parseInt(anoOperacional) // Regista a tarefa estritamente neste ano
+          ano: parseInt(anoOperacional)
         })
       });
 
@@ -174,10 +208,10 @@ export default function ProcessoDetalhe() {
         carregarTarefas();
       } else {
         const erro = await resposta.json();
-        setErroModal(erro.detail || "Falha ao submeter o registo.");
+        setErroModalTarefa(erro.detail || "Falha ao submeter o registo.");
       }
     } catch (error) {
-      setErroModal("Falha de comunicação externa.");
+      setErroModalTarefa("Falha de comunicação externa.");
     }
   };
 
@@ -203,35 +237,44 @@ export default function ProcessoDetalhe() {
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col font-sans">
       
-      <header className="bg-white shadow-sm border-b border-gray-200 px-4 py-4 flex flex-col sm:flex-row sm:justify-between sm:items-center sticky top-0 z-40 space-y-4 sm:space-y-0">
-        <div className="flex items-center space-x-4">
+      {/* Cabeçalho Otimizado - Linha única sem distrações visuais */}
+      <header className="bg-white shadow-sm border-b border-gray-200 px-4 py-2.5 flex flex-col sm:flex-row sm:justify-between sm:items-center sticky top-0 z-40 space-y-3 sm:space-y-0">
+        <div className="flex items-center space-x-3 overflow-hidden w-full sm:w-auto">
           <button 
             onClick={() => router.push("/dashboard")}
-            className="p-2 hover:bg-gray-100 rounded-xl text-gray-500 transition-colors focus:outline-none border border-transparent hover:border-gray-200 shrink-0"
+            className="p-1.5 hover:bg-gray-100 rounded-lg text-gray-500 transition-colors focus:outline-none border border-transparent hover:border-gray-200 shrink-0"
             title="Voltar"
           >
-            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
             </svg>
           </button>
           
-          <div className="flex flex-col">
-            <span className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-0.5 flex items-center">
-              Processo <span className="mx-2 text-gray-300">|</span> Ano Operacional: <span className="text-orange-600 ml-1">{anoOperacional}</span>
+          <div className="flex flex-col overflow-hidden whitespace-nowrap">
+            <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-0.5 flex items-center">
+              Processo <span className="mx-1.5 text-gray-300">|</span> Ano Operacional: <span className="text-orange-600 ml-1">{anoOperacional}</span>
             </span>
-            <h1 className="text-xl sm:text-2xl font-extrabold text-gray-900 leading-none tracking-tight">
-              <span className="text-orange-600">{processo.codigo}</span> <span className="text-gray-300 font-light mx-1.5">|</span> {processo.cliente} <span className="text-gray-300 font-light mx-1.5">|</span> {processo.descricao}
+            <h1 className="text-base sm:text-lg font-extrabold text-gray-900 leading-tight tracking-tight truncate">
+              <span className="text-orange-600">{processo.codigo}</span> <span className="text-gray-300 font-light mx-1">|</span> {processo.cliente} <span className="text-gray-300 font-light mx-1">|</span> {processo.descricao}
             </h1>
           </div>
         </div>
 
         {["Gestão", "Preparação", "Orçamentação"].includes(setorUtilizador) && processo.estado === "Em Curso" && (
-          <button 
-            onClick={concluirProcesso}
-            className="bg-green-800 hover:bg-green-900 text-white font-bold px-5 py-2.5 rounded-xl text-xs uppercase tracking-wider transition-colors shadow-sm shrink-0 w-full sm:w-auto"
-          >
-            Concluir Obra
-          </button>
+          <div className="flex space-x-2 shrink-0">
+            <button 
+              onClick={() => setModalTransitarAberto(true)}
+              className="bg-blue-50 text-blue-700 hover:bg-blue-100 font-bold px-4 py-2 rounded-lg text-[10px] uppercase tracking-wider transition-colors border border-blue-200 w-full sm:w-auto"
+            >
+              Transitar Ano
+            </button>
+            <button 
+              onClick={concluirProcesso}
+              className="bg-green-800 hover:bg-green-900 text-white font-bold px-4 py-2 rounded-lg text-[10px] uppercase tracking-wider transition-colors shadow-sm w-full sm:w-auto"
+            >
+              Concluir Obra
+            </button>
+          </div>
         )}
       </header>
 
@@ -325,6 +368,44 @@ export default function ProcessoDetalhe() {
 
       </main>
 
+      {/* MODAL: Transitar Processo */}
+      {modalTransitarAberto && (
+        <div className="fixed inset-0 bg-gray-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-2xl w-full max-w-sm overflow-hidden shadow-xl border border-gray-100">
+            <div className="px-6 py-4 border-b border-gray-200 bg-gray-50 flex justify-between items-center">
+              <h3 className="font-bold text-gray-900 w-full text-center pl-6">Transitar Processo</h3>
+              <button onClick={() => setModalTransitarAberto(false)} className="text-gray-400 hover:text-gray-600 focus:outline-none">
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
+              </button>
+            </div>
+            
+            <form onSubmit={confirmarTransicao} className="p-6 space-y-4 bg-white">
+              <p className="text-xs text-gray-500 text-center mb-4">Ao transitar, a obra permanecerá idêntica, mas receberá um painel em branco exclusivo para os registos do novo ano.</p>
+              
+              {erroModalTransitar && <div className="p-3 bg-red-50 text-red-600 text-sm rounded-xl border border-red-100 text-center font-medium">{erroModalTransitar}</div>}
+              
+              <div>
+                <label className="block text-center w-full text-xs font-bold text-gray-600 mb-1 uppercase tracking-wider">Ano Destino</label>
+                <select required value={anoDestino} onChange={(e) => setAnoDestino(e.target.value)} className="w-full px-3 py-3 border border-gray-300 rounded-xl bg-white text-gray-900 font-bold cursor-pointer text-center text-sm">
+                  <option value="2024">2024</option>
+                  <option value="2025">2025</option>
+                  <option value="2026">2026</option>
+                  <option value="2027">2027</option>
+                  <option value="2028">2028</option>
+                  <option value="2029">2029</option>
+                  <option value="2030">2030</option>
+                </select>
+              </div>
+              
+              <button type="submit" className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3.5 px-4 rounded-xl transition-colors uppercase tracking-wider text-xs mt-4 shadow-sm">
+                Confirmar Transição
+              </button>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* MODAL: Registos Operacionais */}
       {modalTarefaAberto && (
         <div className="fixed inset-0 bg-gray-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
           <div className="bg-white rounded-2xl w-full max-w-md overflow-hidden shadow-xl border border-gray-100 flex flex-col max-h-[90vh]">
@@ -336,7 +417,7 @@ export default function ProcessoDetalhe() {
             </div>
             
             <form onSubmit={submeterTarefa} className="p-6 space-y-4 bg-white overflow-y-auto grow">
-              {erroModal && <div className="p-3 bg-red-50 text-red-600 text-sm rounded-xl border border-red-100 text-center font-medium">{erroModal}</div>}
+              {erroModalTarefa && <div className="p-3 bg-red-50 text-red-600 text-sm rounded-xl border border-red-100 text-center font-medium">{erroModalTarefa}</div>}
               
               <div>
                 <label className="block text-center w-full text-xs font-bold text-gray-600 mb-1 uppercase tracking-wider">Tipo</label>
@@ -379,9 +460,7 @@ export default function ProcessoDetalhe() {
                       </div>
                     );
                   })}
-                  {utilizadores.length === 0 && (
-                    <p className="text-xs text-center text-gray-400 py-2">Sem colaboradores disponíveis.</p>
-                  )}
+                  {utilizadores.length === 0 && <p className="text-xs text-center text-gray-400 py-2">Sem colaboradores disponíveis.</p>}
                 </div>
               </div>
               
