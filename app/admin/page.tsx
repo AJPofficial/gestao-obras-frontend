@@ -64,8 +64,7 @@ export default function AdminDashboard() {
         
         <header className="flex items-center justify-between mb-8">
           <div>
-            <h1 className="text-2xl font-bold text-gray-900">Painel de Administração</h1>
-            <p className="text-sm text-gray-500">Aprovação e gestão de acessos à plataforma.</p>
+            <h1 className="text-2xl font-bold text-gray-900">Validação de Contas</h1>
           </div>
           <button onClick={() => router.push("/dashboard")} className="bg-gray-200 text-gray-700 hover:bg-gray-300 px-4 py-2 rounded-lg text-sm font-bold transition-colors">
             Voltar

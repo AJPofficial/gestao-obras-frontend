@@ -9,7 +9,6 @@ export default function Dashboard() {
   const [menuAberto, setMenuAberto] = useState(false);
   const [processos, setProcessos] = useState<any[]>([]);
   
-  // O ano selecionado para visualizar na lista
   const [anoFiltro, setAnoFiltro] = useState(new Date().getFullYear().toString());
   
   const [modalAberto, setModalAberto] = useState(false);
@@ -39,7 +38,6 @@ export default function Dashboard() {
     return () => document.removeEventListener("mousedown", fecharMenu);
   }, [router]);
 
-  // Recarrega os processos sempre que o ano do filtro mudar
   useEffect(() => {
     carregarProcessos(anoFiltro);
   }, [anoFiltro]);
@@ -70,11 +68,6 @@ export default function Dashboard() {
     e.preventDefault();
     setErroModal("");
 
-    if (!novoAno) {
-      setErroModal("Por favor, selecione um ano.");
-      return;
-    }
-
     try {
       const baseUrl = process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:8000";
       const token = localStorage.getItem("token");
@@ -91,7 +84,6 @@ export default function Dashboard() {
         setModalAberto(false);
         setNovoCodigo("");
         setNovoDescritivo("");
-        // Volta a definir o filtro para o ano que o utilizador acabou de criar a obra
         setAnoFiltro(novoAno); 
       } else {
         const dados = await resposta.json();
@@ -115,10 +107,11 @@ export default function Dashboard() {
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col font-sans">
       
+      {/* Cabeçalho Otimizado - Linha Única para Menor Desperdício de Espaço */}
       <header className="bg-white shadow-sm border-b border-gray-200 px-4 py-3 flex justify-between items-center sticky top-0 z-40">
-        <div className="flex flex-col">
-          <span className="text-xs text-gray-500 uppercase tracking-wider font-semibold">Setor Ativo</span>
-          <span className="text-orange-600 font-bold text-lg leading-none">{setor}</span>
+        <div className="flex items-center bg-gray-100 px-3 py-1.5 rounded-xl border border-gray-200 text-sm">
+          <span className="text-gray-500 font-medium mr-1.5">Setor:</span>
+          <span className="text-orange-600 font-bold">{setor}</span>
         </div>
 
         <div className="relative" ref={menuRef}>
@@ -160,19 +153,17 @@ export default function Dashboard() {
               className="w-full bg-orange-600 hover:bg-orange-700 text-white font-bold py-4 px-4 rounded-xl shadow-sm transition-colors text-sm uppercase tracking-wider flex items-center justify-center active:scale-[0.98]"
             >
               <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" /></svg>
-              Adicionar Novo Processo
+              Adicionar Processo
             </button>
           </section>
         )}
 
+        {/* SECÇÃO OBRAS ATIVAS - Tabela Estruturada de Alta Performance */}
         <section className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
           <div className="px-5 py-4 border-b border-gray-100 bg-gray-50 flex justify-between items-center">
-            <h2 className="font-bold text-gray-800 flex items-center text-sm uppercase tracking-wide">
-              <span className="w-2 h-2 rounded-full bg-green-500 mr-2"></span>
+            <h2 className="font-bold text-gray-800 text-sm uppercase tracking-wide">
               Obras Ativas
             </h2>
-            
-            {/* Selecionador Dinâmico de Ano */}
             <select 
               value={anoFiltro} 
               onChange={(e) => setAnoFiltro(e.target.value)}
@@ -182,58 +173,84 @@ export default function Dashboard() {
               <option value="2025">Ano: 2025</option>
               <option value="2026">Ano: 2026</option>
               <option value="2027">Ano: 2027</option>
+              <option value="2027">Ano: 2028</option>
+              <option value="2027">Ano: 2029</option>
+              <option value="2027">Ano: 2030</option>
             </select>
           </div>
           
+          {/* Cabeçalho da Tabela */}
+          <div className="hidden sm:grid grid-cols-4 gap-4 px-4 py-2.5 text-xs font-bold text-gray-400 uppercase tracking-wider border-b border-gray-100 bg-gray-50/50">
+            <div>Código</div>
+            <div className="col-span-2">Descritivo</div>
+            <div className="text-right">Estado</div>
+          </div>
+
           <div className="divide-y divide-gray-100">
             {processos.length === 0 ? (
               <div className="p-8 text-center flex flex-col items-center justify-center">
-                <p className="text-gray-500 font-medium text-sm">Nenhum processo ativo encontrado para {anoFiltro}.</p>
+                <p className="text-gray-400 font-medium text-sm">Nenhum processo ativo em {anoFiltro}.</p>
               </div>
             ) : (
               processos.map((proc) => (
-                <div key={proc.id} className="p-4 flex flex-col sm:flex-row justify-between sm:items-center hover:bg-gray-50 transition-colors">
-                  <div>
-                    <span className="font-bold text-orange-600 text-lg block">{proc.codigo}</span>
-                    <span className="text-sm text-gray-600">{proc.descritivo}</span>
+                <div key={proc.id} className="p-4 grid grid-cols-1 sm:grid-cols-4 gap-2 sm:gap-4 items-start sm:items-center hover:bg-gray-50 transition-colors">
+                  <div className="font-bold text-orange-600 text-base sm:text-sm">{proc.codigo}</div>
+                  <div className="text-sm text-gray-700 col-span-2 font-medium">{proc.descritivo || <span className="text-gray-300 italic">Sem descrição</span>}</div>
+                  <div className="sm:text-right">
+                    <span className="inline-block text-xs font-bold px-2.5 py-1 rounded-lg bg-blue-50 text-blue-700 border border-blue-100">
+                      {proc.estado}
+                    </span>
                   </div>
-                  <span className="mt-2 sm:mt-0 text-xs font-bold px-3 py-1 rounded-full bg-blue-100 text-blue-800 w-fit">
-                    {proc.estado}
-                  </span>
                 </div>
               ))
             )}
           </div>
         </section>
 
-        <section>
-          <button className="w-full bg-white border border-gray-200 hover:border-orange-300 text-gray-700 p-4 rounded-xl shadow-sm flex flex-col items-center justify-center transition-colors active:bg-gray-50">
-            <svg className="w-6 h-6 mb-2 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
-            <span className="text-xs font-bold uppercase">Histórico de Obras</span>
-          </button>
+        {/* SECÇÃO OBRAS CONCLUÍDAS - Consistência Visual Corporativa */}
+        <section className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+          <div className="px-5 py-4 border-b border-gray-100 bg-gray-50">
+            <h2 className="font-bold text-gray-800 text-sm uppercase tracking-wide">
+              Obras Concluídas
+            </h2>
+          </div>
+          
+          <div className="hidden sm:grid grid-cols-4 gap-4 px-4 py-2.5 text-xs font-bold text-gray-400 uppercase tracking-wider border-b border-gray-100 bg-gray-50/50">
+            <div>Código</div>
+            <div className="col-span-2">Descritivo</div>
+            <div className="text-right">Estado</div>
+          </div>
+
+          <div className="divide-y divide-gray-100">
+            <div className="p-8 text-center flex flex-col items-center justify-center">
+              <svg className="w-8 h-8 text-gray-300 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M5 13l4 4L19 7" />
+              </svg>
+              <p className="text-gray-400 font-medium text-sm">Histórico de obras concluídas vazio.</p>
+            </div>
+          </div>
         </section>
 
       </main>
 
-      {/* MODAL: Adicionar Novo Processo */}
+      {/* MODAL: Adicionar Processo - Blindado contra Dark Mode Forçado */}
       {modalAberto && (
-        <div className="fixed inset-0 bg-gray-900 bg-opacity-75 z-50 flex items-center justify-center p-4">
-          <div className="bg-white rounded-2xl w-full max-w-md overflow-hidden shadow-2xl">
-            <div className="px-6 py-4 border-b border-gray-100 bg-gray-50 flex justify-between items-center">
-              <h3 className="font-bold text-gray-900">Novo Processo</h3>
-              <button onClick={() => setModalAberto(false)} className="text-gray-400 hover:text-gray-600">
-                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
+        <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-2xl w-full max-w-md overflow-hidden shadow-xl border border-gray-100">
+            <div className="px-6 py-4 border-b border-gray-200 bg-gray-50 flex justify-between items-center">
+              <h3 className="font-bold text-gray-900 w-full text-center pl-6">Adicionar Processo</h3>
+              <button onClick={() => setModalAberto(false)} className="text-gray-400 hover:text-gray-600 focus:outline-none">
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
               </button>
             </div>
             
-            <form onSubmit={criarProcesso} className="p-6 space-y-4">
-              {erroModal && <div className="p-3 bg-red-50 text-red-600 text-sm rounded-lg border border-red-200">{erroModal}</div>}
+            <form onSubmit={criarProcesso} className="p-6 space-y-4 bg-white">
+              {erroModal && <div className="p-3 bg-red-50 text-red-600 text-sm rounded-xl border border-red-100 text-center font-medium">{erroModal}</div>}
               
               <div className="grid grid-cols-3 gap-4">
-                {/* Campo Ano passa a ser obrigatório e ao lado do código */}
                 <div className="col-span-1">
-                  <label className="block text-xs font-semibold text-gray-700 mb-1 uppercase tracking-wide">Ano</label>
-                  <select required value={novoAno} onChange={(e) => setNovoAno(e.target.value)} className="w-full px-3 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-orange-500 bg-white text-gray-900 font-semibold cursor-pointer">
+                  <label className="block text-center w-full text-xs font-bold text-gray-600 mb-1 uppercase tracking-wider">Ano</label>
+                  <select required value={novoAno} onChange={(e) => setNovoAno(e.target.value)} className="w-full px-3 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-orange-500 bg-white text-gray-900 font-semibold cursor-pointer text-center">
                     <option value="2024">2024</option>
                     <option value="2025">2025</option>
                     <option value="2026">2026</option>
@@ -242,18 +259,17 @@ export default function Dashboard() {
                 </div>
 
                 <div className="col-span-2">
-                  <label className="block text-xs font-semibold text-gray-700 mb-1 uppercase tracking-wide">Código</label>
-                  {/* bg-white forçado para impedir o Dark Mode de escurecer a caixa */}
-                  <input required type="text" value={novoCodigo} onChange={(e) => setNovoCodigo(e.target.value)} className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-orange-500 bg-white text-gray-900 placeholder-gray-400" placeholder="Ex: OB-2601" />
+                  <label className="block text-center w-full text-xs font-bold text-gray-600 mb-1 uppercase tracking-wider">Código</label>
+                  <input required type="text" value={novoCodigo} onChange={(e) => setNovoCodigo(e.target.value)} className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-orange-500 bg-white text-gray-900 placeholder-gray-400 text-center" placeholder="Ex: OB-2601" />
                 </div>
               </div>
               
               <div>
-                <label className="block text-xs font-semibold text-gray-700 mb-1 uppercase tracking-wide">Descritivo (Opcional)</label>
-                <textarea value={novoDescritivo} onChange={(e) => setNovoDescritivo(e.target.value)} rows={2} className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-orange-500 bg-white text-gray-900 placeholder-gray-400" placeholder="Ex: Construção de Armazém"></textarea>
+                <label className="block text-center w-full text-xs font-bold text-gray-600 mb-1 uppercase tracking-wider">Descritivo (Opcional)</label>
+                <textarea value={novoDescritivo} onChange={(e) => setNovoDescritivo(e.target.value)} rows={2} className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-orange-500 bg-white text-gray-900 placeholder-gray-400 text-center" placeholder="Ex: Construção de Armazém"></textarea>
               </div>
               
-              <button type="submit" className="w-full bg-orange-600 hover:bg-orange-700 text-white font-bold py-3.5 px-4 rounded-xl transition-colors uppercase tracking-wide text-sm mt-4 shadow-sm">
+              <button type="submit" className="w-full bg-orange-600 hover:bg-orange-700 text-white font-bold py-3.5 px-4 rounded-xl transition-colors uppercase tracking-wider text-sm mt-4 shadow-sm">
                 Gravar Processo
               </button>
             </form>
