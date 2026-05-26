@@ -357,7 +357,7 @@ export default function ProcessoDetalhe() {
                           : "bg-white text-gray-700 border-gray-300 hover:bg-gray-50 shadow-sm"
                       } ${processo.estado !== "Em Curso" ? "opacity-50 cursor-not-allowed" : ""}`}
                     >
-                      {t.estado === "Resolvido" ? "Concluído" : "Marcar Concluído"}
+                      {t.estado === "Resolvido" ? "Concluído" : "Concluído"}
                     </button>
                   </div>
                 </div>
