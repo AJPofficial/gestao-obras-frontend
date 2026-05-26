@@ -420,7 +420,7 @@ export default function ProcessoDetalhe() {
               {erroModalTarefa && <div className="p-3 bg-red-50 text-red-600 text-sm rounded-xl border border-red-100 text-center font-medium">{erroModalTarefa}</div>}
               
               <div>
-                <label className="block text-center w-full text-xs font-bold text-gray-600 mb-1 uppercase tracking-wider">Tipo</label>
+                <label className="block text-center w-full text-xs font-bold text-gray-600 mb-1 uppercase tracking-wider">Tipo de Registo</label>
                 <select value={tipoTarefa} onChange={(e) => setTipoTarefa(e.target.value)} className="w-full px-3 py-3 border border-gray-300 rounded-xl bg-white text-gray-900 font-semibold cursor-pointer text-center text-sm">
                   <option value="Tarefa">Tarefa</option>
                   <option value="Alerta">Alerta</option>
