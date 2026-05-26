@@ -108,6 +108,27 @@ export default function ProcessoDetalhe() {
     }
   };
 
+  const concluirProcesso = async () => {
+    if (!window.confirm("Tem a certeza que deseja marcar esta obra como concluída? Ela sairá das listagens ativas.")) return;
+    try {
+      const baseUrl = process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:8000";
+      const token = localStorage.getItem("token");
+      const resposta = await fetch(`${baseUrl}/processos/${processoId}/concluir`, {
+        method: "PATCH",
+        headers: { "Authorization": `Bearer ${token}` }
+      });
+
+      if (resposta.ok) {
+        alert("Obra concluída com sucesso.");
+        router.push("/dashboard");
+      } else {
+        alert("Erro ao concluir o processo.");
+      }
+    } catch (error) {
+      alert("Falha de rede ao tentar atualizar o processo.");
+    }
+  };
+
   const submeterTarefa = async (e: React.FormEvent) => {
     e.preventDefault();
     setErroModal("");
@@ -177,17 +198,32 @@ export default function ProcessoDetalhe() {
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col font-sans">
       
-      <header className="bg-white shadow-sm border-b border-gray-200 px-4 py-4 flex justify-between items-center sticky top-0 z-40">
-        <div className="flex flex-col">
-          <span className="text-xs font-bold text-gray-400 uppercase tracking-wider">Processo sob Consulta</span>
-          <h1 className="text-xl font-bold text-orange-600 leading-none mt-1">{processo.codigo}</h1>
+      {/* Cabeçalho Otimizado com Ícone de Seta, Título Direto e Botão de Conclusão */}
+      <header className="bg-white shadow-sm border-b border-gray-200 px-4 py-3 flex justify-between items-center sticky top-0 z-40">
+        <div className="flex items-center space-x-3">
+          <button 
+            onClick={() => router.push("/dashboard")}
+            className="p-2 hover:bg-gray-100 rounded-xl text-gray-600 transition-colors focus:outline-none"
+            title="Voltar"
+          >
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+            </svg>
+          </button>
+          <div className="flex items-center space-x-1.5">
+            <span className="text-gray-500 font-medium text-sm">Processo:</span>
+            <span className="text-orange-600 font-bold text-lg leading-none">{processo.codigo}</span>
+          </div>
         </div>
-        <button 
-          onClick={() => router.push("/dashboard")}
-          className="bg-gray-100 border border-gray-200 text-gray-700 hover:bg-gray-200 px-4 py-2 rounded-xl text-xs font-bold transition-all uppercase tracking-wide"
-        >
-          Voltar ao Painel
-        </button>
+
+        {["Gestão", "Preparação", "Orçamentação"].includes(setorUtilizador) && processo.estado === "Em Curso" && (
+          <button 
+            onClick={concluirProcesso}
+            className="bg-green-700 hover:bg-green-800 text-white font-bold px-3.5 py-2 rounded-xl text-xs uppercase tracking-wide transition-colors shadow-sm"
+          >
+            Concluir Obra
+          </button>
+        )}
       </header>
 
       <main className="flex-1 p-4 w-full max-w-5xl mx-auto space-y-6 mt-2">
@@ -195,8 +231,17 @@ export default function ProcessoDetalhe() {
         <section className="bg-white p-5 rounded-xl shadow-sm border border-gray-200">
           <h2 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">Comentários Iniciais / Indicações</h2>
           <p className="text-sm text-gray-800 font-medium">{processo.descritivo || <span className="text-gray-300 italic">Nenhuma indicação registada.</span>}</p>
-          <div className="mt-3 pt-3 border-t border-gray-100 flex justify-between text-xs text-gray-400 font-bold">
-            <span>Estado da Obra: <span className="text-blue-600 uppercase bg-blue-50 px-2 py-0.5 rounded ml-1 border border-blue-100">{processo.estado}</span></span>
+          <div className="mt-3 pt-3 border-t border-gray-100 flex justify-between items-center text-xs text-gray-400 font-bold">
+            <span>
+              Estado da Obra: 
+              <span className={`uppercase px-2 py-0.5 rounded ml-1 border ${
+                processo.estado === "Em Curso" 
+                  ? "bg-green-800 text-white border-green-900 font-bold" 
+                  : "bg-gray-100 text-gray-700 border-gray-200"
+              }`}>
+                {processo.estado}
+              </span>
+            </span>
             <span>ID: {processo.id}</span>
           </div>
         </section>
@@ -218,7 +263,7 @@ export default function ProcessoDetalhe() {
           ))}
         </nav>
 
-        {((setorUtilizador === "Montagem" && setorAtivoAbas === "Montagem") ||
+        {processo.estado === "Em Curso" && ((setorUtilizador === "Montagem" && setorAtivoAbas === "Montagem") ||
           (setorUtilizador === "Produção" && setorAtivoAbas === "Produção") ||
           ["Gestão", "Preparação", "Orçamentação"].includes(setorUtilizador)) && (
           <button
@@ -271,12 +316,13 @@ export default function ProcessoDetalhe() {
                   </div>
                   <div className="sm:text-right">
                     <button
+                      disabled={processo.estado !== "Em Curso"}
                       onClick={() => alternarEstadoTarefa(t.id, t.estado)}
                       className={`w-full sm:w-auto text-xs font-bold px-3 py-2 sm:py-1.5 rounded-lg border transition-all ${
                         t.estado === "Resolvido"
                           ? "bg-green-50 text-green-700 border-green-100 hover:bg-green-100"
                           : "bg-white text-gray-700 border-gray-300 hover:bg-gray-50 shadow-sm"
-                      }`}
+                      } ${processo.estado !== "Em Curso" ? "opacity-50 cursor-not-allowed" : ""}`}
                     >
                       {t.estado === "Resolvido" ? "Concluído" : "Marcar Concluído"}
                     </button>
@@ -289,7 +335,6 @@ export default function ProcessoDetalhe() {
 
       </main>
 
-      {/* MODAL COM FUNDO BLINDADO PARA DARK MODE E CHECKBOXES POR GRUPO */}
       {modalTarefaAberto && (
         <div className="fixed inset-0 bg-gray-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
           <div className="bg-white rounded-2xl w-full max-w-md overflow-hidden shadow-xl border border-gray-100 flex flex-col max-h-[90vh]">
@@ -321,7 +366,6 @@ export default function ProcessoDetalhe() {
                 <textarea value={descricaoTarefa} onChange={(e) => setDescricaoTarefa(e.target.value)} rows={2} className="w-full px-4 py-3 border border-gray-300 rounded-xl bg-white text-gray-900 text-center text-sm"></textarea>
               </div>
 
-              {/* LISTA DE COLABORADORES AGRUPADA POR SETOR */}
               <div>
                 <label className="block text-center w-full text-xs font-bold text-gray-600 mb-2 uppercase tracking-wider">Associar Colaboradores</label>
                 <div className="max-h-48 overflow-y-auto border border-gray-200 rounded-xl p-3 space-y-4 bg-gray-50 text-left">
@@ -345,9 +389,6 @@ export default function ProcessoDetalhe() {
                       </div>
                     );
                   })}
-                  {utilizadores.length === 0 && (
-                    <p className="text-xs text-center text-gray-400 py-2">Sem colaboradores disponíveis.</p>
-                  )}
                 </div>
               </div>
               
