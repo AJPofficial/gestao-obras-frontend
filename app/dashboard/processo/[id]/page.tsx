@@ -380,12 +380,10 @@ export default function ProcessoDetalhe() {
             </div>
             
             <form onSubmit={confirmarTransicao} className="p-6 space-y-4 bg-white">
-              <p className="text-xs text-gray-500 text-center mb-4">Ao transitar, a obra permanecerá idêntica, mas receberá um painel em branco exclusivo para os registos do novo ano.</p>
-              
               {erroModalTransitar && <div className="p-3 bg-red-50 text-red-600 text-sm rounded-xl border border-red-100 text-center font-medium">{erroModalTransitar}</div>}
               
               <div>
-                <label className="block text-center w-full text-xs font-bold text-gray-600 mb-1 uppercase tracking-wider">Ano Destino</label>
+                <label className="block text-center w-full text-xs font-bold text-gray-600 mb-1 uppercase tracking-wider">Destino</label>
                 <select required value={anoDestino} onChange={(e) => setAnoDestino(e.target.value)} className="w-full px-3 py-3 border border-gray-300 rounded-xl bg-white text-gray-900 font-bold cursor-pointer text-center text-sm">
                   <option value="2024">2024</option>
                   <option value="2025">2025</option>
