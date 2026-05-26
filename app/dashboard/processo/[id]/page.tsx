@@ -266,7 +266,7 @@ export default function ProcessoDetalhe() {
               onClick={() => setModalTransitarAberto(true)}
               className="bg-blue-50 text-blue-700 hover:bg-blue-100 font-bold px-4 py-2 rounded-lg text-[10px] uppercase tracking-wider transition-colors border border-blue-200 w-full sm:w-auto"
             >
-              Transitar Ano
+              Transitar
             </button>
             <button 
               onClick={concluirProcesso}
