@@ -12,8 +12,11 @@ export default function Dashboard() {
   const [anoFiltro, setAnoFiltro] = useState(new Date().getFullYear().toString());
   
   const [modalAberto, setModalAberto] = useState(false);
-  const [novoCodigo, setNovoCodigo] = useState("");
-  const [novoDescritivo, setNovoDescritivo] = useState("");
+  
+  // Novos estados para o formulário exato
+  const [novoNumProc, setNovoNumProc] = useState("");
+  const [novoCliente, setNovoCliente] = useState("");
+  const [novaObra, setNovaObra] = useState("");
   const [novoAno, setNovoAno] = useState(new Date().getFullYear().toString());
   const [erroModal, setErroModal] = useState("");
 
@@ -77,13 +80,19 @@ export default function Dashboard() {
           "Authorization": `Bearer ${token}`,
           "Content-Type": "application/json"
         },
-        body: JSON.stringify({ codigo: novoCodigo, descritivo: novoDescritivo, ano: novoAno })
+        body: JSON.stringify({ 
+          num_proc: novoNumProc, 
+          cliente: novoCliente, 
+          obra: novaObra, 
+          ano: novoAno 
+        })
       });
 
       if (resposta.ok) {
         setModalAberto(false);
-        setNovoCodigo("");
-        setNovoDescritivo("");
+        setNovoNumProc("");
+        setNovoCliente("");
+        setNovaObra("");
         setAnoFiltro(novoAno); 
       } else {
         const dados = await resposta.json();
@@ -107,7 +116,6 @@ export default function Dashboard() {
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col font-sans">
       
-      {/* Cabeçalho Otimizado - Linha Única para Menor Desperdício de Espaço */}
       <header className="bg-white shadow-sm border-b border-gray-200 px-4 py-3 flex justify-between items-center sticky top-0 z-40">
         <div className="flex items-center bg-gray-100 px-3 py-1.5 rounded-xl border border-gray-200 text-sm">
           <span className="text-gray-500 font-medium mr-1.5">Setor:</span>
@@ -158,7 +166,6 @@ export default function Dashboard() {
           </section>
         )}
 
-        {/* SECÇÃO OBRAS ATIVAS - Tabela Estruturada de Alta Performance */}
         <section className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
           <div className="px-5 py-4 border-b border-gray-100 bg-gray-50 flex justify-between items-center">
             <h2 className="font-bold text-gray-800 text-sm uppercase tracking-wide">
@@ -179,10 +186,9 @@ export default function Dashboard() {
             </select>
           </div>
           
-          {/* Cabeçalho da Tabela */}
           <div className="hidden sm:grid grid-cols-4 gap-4 px-4 py-2.5 text-xs font-bold text-gray-400 uppercase tracking-wider border-b border-gray-100 bg-gray-50/50">
-            <div>Código</div>
-            <div className="col-span-2">Descritivo</div>
+            <div className="col-span-2">Processo / Cliente</div>
+            <div>Obra</div>
             <div className="text-right">Estado</div>
           </div>
 
@@ -195,13 +201,21 @@ export default function Dashboard() {
               processos.map((proc) => (
                 <div 
                   key={proc.id} 
-                  onClick={() => router.push(`/dashboard/processo/${proc.id}`)}
+                  onClick={() => router.push(`/dashboard/processo/${proc.id}?ano=${anoFiltro}`)}
                   className="p-4 grid grid-cols-1 sm:grid-cols-4 gap-2 sm:gap-4 items-start sm:items-center hover:bg-gray-50 transition-colors cursor-pointer"
                 >
-                  <div className="font-bold text-orange-600 text-base sm:text-sm">{proc.codigo}</div>
-                  <div className="text-sm text-gray-700 col-span-2 font-medium">{proc.descritivo || <span className="text-gray-300 italic">Sem descrição</span>}</div>
+                  <div className="col-span-2">
+                    <span className="font-bold text-orange-600 text-sm sm:text-base">{proc.codigo}</span>
+                    <span className="text-gray-400 mx-1.5">|</span>
+                    <span className="font-bold text-gray-800 text-sm">{proc.cliente}</span>
+                  </div>
+                  <div className="text-sm text-gray-600 font-medium truncate">{proc.descricao || "Sem descrição"}</div>
                   <div className="sm:text-right">
-                    <span className="inline-block text-xs font-bold px-2.5 py-1 rounded-lg bg-blue-50 text-blue-700 border border-blue-100">
+                    <span className={`inline-block text-xs font-bold px-2.5 py-1 rounded-lg border ${
+                      proc.estado === "Em Curso" 
+                        ? "bg-green-800 text-white border-green-900" 
+                        : "bg-gray-100 text-gray-700 border-gray-200"
+                    }`}>
                       {proc.estado}
                     </span>
                   </div>
@@ -211,7 +225,6 @@ export default function Dashboard() {
           </div>
         </section>
 
-        {/* SECÇÃO OBRAS CONCLUÍDAS - Consistência Visual Corporativa */}
         <section className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
           <div className="px-5 py-4 border-b border-gray-100 bg-gray-50">
             <h2 className="font-bold text-gray-800 text-sm uppercase tracking-wide">
@@ -219,12 +232,6 @@ export default function Dashboard() {
             </h2>
           </div>
           
-          <div className="hidden sm:grid grid-cols-4 gap-4 px-4 py-2.5 text-xs font-bold text-gray-400 uppercase tracking-wider border-b border-gray-100 bg-gray-50/50">
-            <div>Código</div>
-            <div className="col-span-2">Descritivo</div>
-            <div className="text-right">Estado</div>
-          </div>
-
           <div className="divide-y divide-gray-100">
             <div className="p-8 text-center flex flex-col items-center justify-center">
               <svg className="w-8 h-8 text-gray-300 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -237,9 +244,8 @@ export default function Dashboard() {
 
       </main>
 
-      {/* MODAL: Adicionar Processo - Blindado contra Dark Mode Forçado */}
       {modalAberto && (
-        <div className="fixed inset-0 bg-gray-400 bg-opacity-30 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+        <div className="fixed inset-0 bg-gray-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
           <div className="bg-white rounded-2xl w-full max-w-md overflow-hidden shadow-xl border border-gray-100">
             <div className="px-6 py-4 border-b border-gray-200 bg-gray-50 flex justify-between items-center">
               <h3 className="font-bold text-gray-900 w-full text-center pl-6">Adicionar Processo</h3>
@@ -251,10 +257,10 @@ export default function Dashboard() {
             <form onSubmit={criarProcesso} className="p-6 space-y-4 bg-white">
               {erroModal && <div className="p-3 bg-red-50 text-red-600 text-sm rounded-xl border border-red-100 text-center font-medium">{erroModal}</div>}
               
-              <div className="grid grid-cols-3 gap-4">
-                <div className="col-span-1">
+              <div className="grid grid-cols-2 gap-4">
+                <div>
                   <label className="block text-center w-full text-xs font-bold text-gray-600 mb-1 uppercase tracking-wider">Ano</label>
-                  <select required value={novoAno} onChange={(e) => setNovoAno(e.target.value)} className="w-full px-3 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-orange-500 bg-white text-gray-900 font-semibold cursor-pointer text-center">
+                  <select required value={novoAno} onChange={(e) => setNovoAno(e.target.value)} className="w-full px-3 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-orange-500 bg-white text-gray-900 font-semibold cursor-pointer text-center text-sm">
                     <option value="2024">2024</option>
                     <option value="2025">2025</option>
                     <option value="2026">2026</option>
@@ -265,15 +271,20 @@ export default function Dashboard() {
                   </select>
                 </div>
 
-                <div className="col-span-2">
-                  <label className="block text-center w-full text-xs font-bold text-gray-600 mb-1 uppercase tracking-wider">Código</label>
-                  <input required type="text" value={novoCodigo} onChange={(e) => setNovoCodigo(e.target.value)} className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-orange-500 bg-white text-gray-900 text-center" />
+                <div>
+                  <label className="block text-center w-full text-xs font-bold text-gray-600 mb-1 uppercase tracking-wider">Nº PROC</label>
+                  <input required type="text" value={novoNumProc} onChange={(e) => setNovoNumProc(e.target.value)} className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-orange-500 bg-white text-gray-900 text-center text-sm" placeholder="Ex: PROC 180" />
                 </div>
               </div>
               
               <div>
-                <label className="block text-center w-full text-xs font-bold text-gray-600 mb-1 uppercase tracking-wider">Comentários</label>
-                <textarea value={novoDescritivo} onChange={(e) => setNovoDescritivo(e.target.value)} rows={2} className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-orange-500 bg-white text-gray-900 text-center"></textarea>
+                <label className="block text-center w-full text-xs font-bold text-gray-600 mb-1 uppercase tracking-wider">Cliente</label>
+                <input required type="text" value={novoCliente} onChange={(e) => setNovoCliente(e.target.value)} className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-orange-500 bg-white text-gray-900 text-center text-sm" placeholder="Ex: Paulo Tavares" />
+              </div>
+
+              <div>
+                <label className="block text-center w-full text-xs font-bold text-gray-600 mb-1 uppercase tracking-wider">Obra (Local/Descrição)</label>
+                <textarea required value={novaObra} onChange={(e) => setNovaObra(e.target.value)} rows={2} className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-orange-500 bg-white text-gray-900 text-center text-sm" placeholder="Ex: Moradia Avintes"></textarea>
               </div>
               
               <button type="submit" className="w-full bg-orange-600 hover:bg-orange-700 text-white font-bold py-3.5 px-4 rounded-xl transition-colors uppercase tracking-wider text-sm mt-4 shadow-sm">

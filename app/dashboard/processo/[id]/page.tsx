@@ -1,12 +1,16 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useRouter, useParams } from "next/navigation";
+import { useRouter, useParams, useSearchParams } from "next/navigation";
 
 export default function ProcessoDetalhe() {
   const router = useRouter();
   const params = useParams();
+  const searchParams = useSearchParams();
+  
   const processoId = params?.id;
+  // Extrai o ano do link. Se falhar, usa o ano atual por segurança.
+  const anoOperacional = searchParams?.get("ano") || new Date().getFullYear().toString();
 
   const [setorUtilizador, setSetorUtilizador] = useState("");
   const [processo, setProcesso] = useState<any>(null);
@@ -59,7 +63,8 @@ export default function ProcessoDetalhe() {
     try {
       const baseUrl = process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:8000";
       const token = localStorage.getItem("token");
-      const resposta = await fetch(`${baseUrl}/tarefas/processo/${processoId}`, {
+      // Envia o ano para a API filtrar
+      const resposta = await fetch(`${baseUrl}/tarefas/processo/${processoId}?ano=${anoOperacional}`, {
         headers: { "Authorization": `Bearer ${token}` }
       });
       if (resposta.ok) {
@@ -109,7 +114,7 @@ export default function ProcessoDetalhe() {
   };
 
   const concluirProcesso = async () => {
-    if (!window.confirm("Tem a certeza que deseja marcar esta obra como concluída? Ela sairá das listagens ativas.")) return;
+    if (!window.confirm("Tem a certeza que deseja marcar esta obra como concluída?")) return;
     try {
       const baseUrl = process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:8000";
       const token = localStorage.getItem("token");
@@ -119,7 +124,6 @@ export default function ProcessoDetalhe() {
       });
 
       if (resposta.ok) {
-        alert("Obra concluída com sucesso.");
         router.push("/dashboard");
       } else {
         alert("Erro ao concluir o processo.");
@@ -157,7 +161,8 @@ export default function ProcessoDetalhe() {
           titulo: tituloTarefa,
           descricao: descricaoTarefa,
           tipo: tipoTarefa,
-          utilizadores_associados: utilizadoresSelecionados
+          utilizadores_associados: utilizadoresSelecionados,
+          ano: parseInt(anoOperacional) // Regista a tarefa estritamente neste ano
         })
       });
 
@@ -198,28 +203,32 @@ export default function ProcessoDetalhe() {
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col font-sans">
       
-      {/* Cabeçalho Otimizado com Ícone de Seta, Título Direto e Botão de Conclusão */}
-      <header className="bg-white shadow-sm border-b border-gray-200 px-4 py-3 flex justify-between items-center sticky top-0 z-40">
-        <div className="flex items-center space-x-3">
+      <header className="bg-white shadow-sm border-b border-gray-200 px-4 py-4 flex flex-col sm:flex-row sm:justify-between sm:items-center sticky top-0 z-40 space-y-4 sm:space-y-0">
+        <div className="flex items-center space-x-4">
           <button 
             onClick={() => router.push("/dashboard")}
-            className="p-2 hover:bg-gray-100 rounded-xl text-gray-600 transition-colors focus:outline-none"
+            className="p-2 hover:bg-gray-100 rounded-xl text-gray-500 transition-colors focus:outline-none border border-transparent hover:border-gray-200 shrink-0"
             title="Voltar"
           >
-            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
             </svg>
           </button>
-          <div className="flex items-center space-x-1.5">
-            <span className="text-gray-500 font-medium text-sm">Processo:</span>
-            <span className="text-orange-600 font-bold text-lg leading-none">{processo.codigo}</span>
+          
+          <div className="flex flex-col">
+            <span className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-0.5 flex items-center">
+              Processo <span className="mx-2 text-gray-300">|</span> Ano Operacional: <span className="text-orange-600 ml-1">{anoOperacional}</span>
+            </span>
+            <h1 className="text-xl sm:text-2xl font-extrabold text-gray-900 leading-none tracking-tight">
+              <span className="text-orange-600">{processo.codigo}</span> <span className="text-gray-300 font-light mx-1.5">|</span> {processo.cliente} <span className="text-gray-300 font-light mx-1.5">|</span> {processo.descricao}
+            </h1>
           </div>
         </div>
 
         {["Gestão", "Preparação", "Orçamentação"].includes(setorUtilizador) && processo.estado === "Em Curso" && (
           <button 
             onClick={concluirProcesso}
-            className="bg-green-700 hover:bg-green-800 text-white font-bold px-3.5 py-2 rounded-xl text-xs uppercase tracking-wide transition-colors shadow-sm"
+            className="bg-green-800 hover:bg-green-900 text-white font-bold px-5 py-2.5 rounded-xl text-xs uppercase tracking-wider transition-colors shadow-sm shrink-0 w-full sm:w-auto"
           >
             Concluir Obra
           </button>
@@ -228,25 +237,6 @@ export default function ProcessoDetalhe() {
 
       <main className="flex-1 p-4 w-full max-w-5xl mx-auto space-y-6 mt-2">
         
-        <section className="bg-white p-5 rounded-xl shadow-sm border border-gray-200">
-          <h2 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">Comentários Iniciais / Indicações</h2>
-          <p className="text-sm text-gray-800 font-medium">{processo.descritivo || <span className="text-gray-300 italic">Nenhuma indicação registada.</span>}</p>
-          <div className="mt-3 pt-3 border-t border-gray-100 flex justify-between items-center text-xs text-gray-400 font-bold">
-            <span>
-              Estado da Obra: 
-              <span className={`uppercase px-2 py-0.5 rounded ml-1 border ${
-                processo.estado === "Em Curso" 
-                  ? "bg-green-800 text-white border-green-900 font-bold" 
-                  : "bg-gray-100 text-gray-700 border-gray-200"
-              }`}>
-                {processo.estado}
-              </span>
-            </span>
-            <span>ID: {processo.id}</span>
-          </div>
-        </section>
-
-        {/* Grelha de Navegação Reparada - 2 Colunas no Telemóvel, 4 no PC */}
         <nav className="grid grid-cols-2 sm:grid-cols-4 gap-2 bg-gray-200 p-1.5 rounded-xl shadow-inner">
           {["Orçamentação", "Preparação", "Produção", "Montagem"].map((s) => (
             <button
@@ -270,13 +260,13 @@ export default function ProcessoDetalhe() {
             onClick={() => setModalTarefaAberto(true)}
             className="w-full bg-gray-900 hover:bg-gray-800 text-white font-bold py-3.5 px-4 rounded-xl shadow-sm transition-colors text-xs uppercase tracking-wider flex items-center justify-center"
           >
-            Registar
+            Registar Item em {setorAtivoAbas}
           </button>
         )}
 
         <section className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
           <div className="px-5 py-4 border-b border-gray-100 bg-gray-50 flex justify-between items-center">
-            <h3 className="font-bold text-gray-800 text-sm uppercase tracking-wide">Registos</h3>
+            <h3 className="font-bold text-gray-800 text-sm uppercase tracking-wide">Registos Operacionais</h3>
             <span className="text-xs font-bold text-gray-500 bg-gray-200 px-2.5 py-1 rounded-lg uppercase border border-gray-300">{setorAtivoAbas}</span>
           </div>
 
@@ -290,7 +280,7 @@ export default function ProcessoDetalhe() {
           <div className="divide-y divide-gray-100">
             {tarefasFiltradas.length === 0 ? (
               <div className="p-8 text-center text-gray-400 font-medium text-sm">
-                Nenhum registo operacional efetuado.
+                Nenhum registo efetuado no ano de {anoOperacional}.
               </div>
             ) : (
               tarefasFiltradas.map((t) => (
@@ -389,6 +379,9 @@ export default function ProcessoDetalhe() {
                       </div>
                     );
                   })}
+                  {utilizadores.length === 0 && (
+                    <p className="text-xs text-center text-gray-400 py-2">Sem colaboradores disponíveis.</p>
+                  )}
                 </div>
               </div>
               
