@@ -45,10 +45,18 @@ export default function Dashboard() {
       });
       if (resposta.ok) {
         const dados = await resposta.json();
-        setProcessos(dados);
+        // A PROTEÇÃO NOVA ESTÁ AQUI: Garante que é uma lista válida
+        if (Array.isArray(dados)) {
+          setProcessos(dados);
+        } else {
+          setProcessos([]);
+        }
+      } else {
+        setProcessos([]);
       }
     } catch (error) {
       console.error("Erro ao carregar processos:", error);
+      setProcessos([]);
     }
   };
 
