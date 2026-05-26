@@ -244,7 +244,7 @@ export default function Dashboard() {
               </button>
             </div>
             
-            <form onSubmit={criarProcesso} className="p-6 space-y-4 bg-white">
+<form onSubmit={criarProcesso} className="p-6 space-y-4 bg-white">
               {erroModal && <div className="p-3 bg-red-50 text-red-600 text-sm rounded-xl border border-red-100 text-center font-medium">{erroModal}</div>}
               
               <div className="grid grid-cols-3 gap-4">
@@ -260,13 +260,13 @@ export default function Dashboard() {
 
                 <div className="col-span-2">
                   <label className="block text-center w-full text-xs font-bold text-gray-600 mb-1 uppercase tracking-wider">Código</label>
-                  <input required type="text" value={novoCodigo} onChange={(e) => setNovoCodigo(e.target.value)} className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-orange-500 bg-white text-gray-900 placeholder-gray-400 text-center" placeholder="Ex: OB-2601" />
+                  <input required type="text" value={novoCodigo} onChange={(e) => setNovoCodigo(e.target.value)} className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-orange-500 bg-white text-gray-900 text-center" />
                 </div>
               </div>
               
               <div>
-                <label className="block text-center w-full text-xs font-bold text-gray-600 mb-1 uppercase tracking-wider">Descritivo (Opcional)</label>
-                <textarea value={novoDescritivo} onChange={(e) => setNovoDescritivo(e.target.value)} rows={2} className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-orange-500 bg-white text-gray-900 placeholder-gray-400 text-center" placeholder="Ex: Construção de Armazém"></textarea>
+                <label className="block text-center w-full text-xs font-bold text-gray-600 mb-1 uppercase tracking-wider">Comentários</label>
+                <textarea value={novoDescritivo} onChange={(e) => setNovoDescritivo(e.target.value)} rows={2} className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-orange-500 bg-white text-gray-900 text-center"></textarea>
               </div>
               
               <button type="submit" className="w-full bg-orange-600 hover:bg-orange-700 text-white font-bold py-3.5 px-4 rounded-xl transition-colors uppercase tracking-wider text-sm mt-4 shadow-sm">
